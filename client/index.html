@@ -15,35 +15,10 @@
       left: 0;
       top: 0;
       width: 100%;
-      height: 22px;
+      height: 15px;
       z-index: 24;
       pointer-events: none;
-    }
-    .meta {
-      position: fixed;
-      top: 30px;
-      left: 10px;
-      z-index: 20;
-      color: #b8d8ff;
-      background: rgba(4, 10, 26, 0.78);
-      border: 1px solid rgba(120, 160, 220, 0.35);
-      border-radius: 6px;
-      padding: 6px 9px;
-      font: 12px/1.4 Consolas, "Courier New", monospace;
-      white-space: pre-line;
-    }
-    .meta-toggle {
-      position: fixed;
-      top: 30px;
-      right: 10px;
-      z-index: 21;
-      border: 1px solid rgba(120, 160, 220, 0.4);
-      background: rgba(8, 12, 20, 0.8);
-      color: #dceaff;
-      border-radius: 6px;
-      padding: 6px 8px;
-      font: 12px/1 Consolas, "Courier New", monospace;
-      cursor: pointer;
+      background: rgba(6, 12, 30, 0.86);
     }
     .band-slider {
       position: fixed;
@@ -53,7 +28,7 @@
       z-index: 26;
       color: #deecff;
       background: rgba(6, 12, 30, 0.86);
-      border: 1px solid rgba(120, 170, 230, 0.4);
+      border: 1px solid #808080;
       border-radius: 10px;
       padding: 8px 10px;
       box-sizing: border-box;
@@ -65,23 +40,10 @@
       position: relative;
       height: 16px;
       border-radius: 999px;
-      background: linear-gradient(90deg, #10304d 0%, #0f4e7a 50%, #155d90 100%);
-      border: 1px solid rgba(180, 220, 255, 0.35);
+      background: linear-gradient(90deg, #2f2f2f 0%, #575757 50%, #7a7a7a 100%);
+      border: 1px solid #808080;
       cursor: pointer;
       overflow: hidden;
-    }
-    .band-track::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: repeating-linear-gradient(
-        90deg,
-        rgba(255, 255, 255, 0.05) 0,
-        rgba(255, 255, 255, 0.05) 1px,
-        transparent 1px,
-        transparent 10px
-      );
-      pointer-events: none;
     }
     .band-knob {
       position: absolute;
@@ -145,9 +107,7 @@
 </head>
 <body>
   <canvas id="wf" width="1920" height="900"></canvas>
-  <canvas id="measure" class="measure" width="1920" height="22"></canvas>
-  <div id="meta" class="meta" hidden></div>
-  <button id="metaToggle" class="meta-toggle" type="button">Meta Off</button>
+  <canvas id="measure" class="measure" width="1920" height="15"></canvas>
   <div id="bandSlider" class="band-slider">
     <div class="band-title">All Bands (MW ~ 26100 kHz)</div>
     <div id="bandTrack" class="band-track">
@@ -173,8 +133,6 @@
     const measureCanvas = document.getElementById("measure");
     const measureCtx = measureCanvas.getContext("2d");
 
-    const metaEl = document.getElementById("meta");
-    const metaToggleEl = document.getElementById("metaToggle");
     const hoverTipEl = document.getElementById("hoverTip");
     const wavePanelEl = document.getElementById("wavePanel");
     const waveFreqEl = document.getElementById("waveFreq");
@@ -211,7 +169,6 @@
     let suppressFramesUntil = 0;
 
     let rowImage = ctx.createImageData(1024, 1);
-    let metaVisible = localStorage.getItem("exwebsdr_meta_visible") === "1";
     let currentMeta = {
       band_name: "-",
       center_freq_hz: null,
@@ -304,7 +261,6 @@
       clearWaterfall();
       suppressFramesUntil = performance.now() + RETUNE_SUPPRESS_MS;
       sendViewControl(reason === "init");
-      renderMeta();
     }
 
     function syncSliderToView(centerHz) {
@@ -318,7 +274,6 @@
       currentViewCenterHz = currentViewStartHz + currentViewSpanHz / 2;
       updateSliderVisual();
       drawMeasure();
-      renderMeta();
     }
 
     function fmtMHz(v) {
@@ -330,25 +285,6 @@
       if (!Number.isFinite(v) || v <= 0) return "-";
       const khz = Math.floor(v / 1000);
       return `${khz}KHz`;
-    }
-
-    function fmtLocal(v) {
-      if (!v || !Number.isFinite(v)) return "-";
-      return new Date(v * 1000).toLocaleString();
-    }
-
-    function renderMeta() {
-      const viewSpan = currentViewSpanHz || currentSpanHz();
-      const viewStart = Number.isFinite(currentViewStartHz) ? currentViewStartHz : null;
-      const viewEnd = Number.isFinite(viewStart) ? (viewStart + viewSpan) : null;
-      metaEl.textContent =
-`Band: ${currentMeta.band_name || "-"}
-Center: ${fmtMHz(currentMeta.center_freq_hz)}
-Span: ${fmtMHz(currentMeta.sample_rate_hz)}
-View: ${fmtMHz(viewStart)} ~ ${fmtMHz(viewEnd)}
-Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
-      metaEl.hidden = !metaVisible;
-      metaToggleEl.textContent = metaVisible ? "Meta On" : "Meta Off";
     }
 
     function updateSliderVisual() {
@@ -364,16 +300,16 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
     function drawMeasure() {
       const dpr = window.devicePixelRatio || 1;
       const cssW = Math.max(320, window.innerWidth);
-      const cssH = measureCanvas.clientHeight || 22;
+      const cssH = measureCanvas.clientHeight || 15;
       measureCanvas.width = Math.floor(cssW * dpr);
       measureCanvas.height = Math.floor(cssH * dpr);
       const w = measureCanvas.width;
       const h = measureCanvas.height;
       measureCtx.setTransform(1, 0, 0, 1, 0, 0);
       measureCtx.clearRect(0, 0, w, h);
-      measureCtx.fillStyle = "rgba(3, 10, 24, 0.92)";
+      measureCtx.fillStyle = "rgba(6, 12, 30, 0.86)";
       measureCtx.fillRect(0, 0, w, h);
-      measureCtx.strokeStyle = "rgba(120, 165, 230, 0.75)";
+      measureCtx.strokeStyle = "#808080";
       measureCtx.lineWidth = Math.max(1, Math.floor(dpr));
       measureCtx.beginPath();
       measureCtx.moveTo(0, h - 0.5);
@@ -388,7 +324,8 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
 
       measureCtx.font = `${Math.max(10, Math.round(10 * dpr))}px Consolas`;
       measureCtx.fillStyle = "rgba(200, 228, 255, 0.92)";
-      measureCtx.strokeStyle = "rgba(172, 210, 255, 0.85)";
+      measureCtx.strokeStyle = "#808080";
+      measureCtx.textBaseline = "bottom";
 
       for (let k = minK; k <= maxK; k += 100) {
         const hz = k * 1000;
@@ -402,7 +339,7 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
         measureCtx.lineTo(x + 0.5, h - 1);
         measureCtx.stroke();
         if (major) {
-          measureCtx.fillText(String(k), x + 3, Math.round(h * 0.55));
+          measureCtx.fillText(`${k} KHz`, x + 3, h - 1);
         }
       }
     }
@@ -433,17 +370,6 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
     clearWaterfall();
     window.addEventListener("resize", resizeCanvas);
 
-    metaToggleEl.addEventListener("click", () => {
-      metaVisible = !metaVisible;
-      localStorage.setItem("exwebsdr_meta_visible", metaVisible ? "1" : "0");
-      renderMeta();
-    });
-
-    window.addEventListener("keydown", (ev) => {
-      if (ev.key.toLowerCase() === "m") metaToggleEl.click();
-    });
-
-    renderMeta();
 
     function estimateLevels(row) {
       const stride = Math.max(1, Math.floor(row.length / 2048));
@@ -476,7 +402,7 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
       emaLow = emaLow * 0.96 + low * 0.04;
       emaHigh = emaHigh * 0.96 + high * 0.04;
       const range = Math.max(34, emaHigh - emaLow);
-      const top = measureCanvas.clientHeight || 22;
+      const top = measureCanvas.clientHeight || 15;
 
       ctx.drawImage(canvas, 0, top, canvas.width, canvas.height - top - 1, 0, top + 1, canvas.width, canvas.height - top - 1);
       const d = rowImage.data;
@@ -777,7 +703,6 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
               updateSliderVisual();
               drawMeasure();
             }
-            renderMeta();
           } else if (msg.type === "am_wave") {
             latestAMWave = msg;
             latestAMWaveTs = performance.now();
