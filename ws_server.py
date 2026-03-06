@@ -22,6 +22,8 @@ HEADER_SIZE = struct.calcsize(HEADER_FORMAT)
 AM_HEADER_FORMAT = "<I d I H"
 AM_HEADER_SIZE = struct.calcsize(AM_HEADER_FORMAT)
 DEFAULT_BINS = 8192
+ALL_BAND_MIN_HZ = 530_000.0
+ALL_BAND_MAX_HZ = 26_100_000.0
 
 
 class ShmReader:
@@ -73,6 +75,25 @@ def load_state(path: Path) -> dict | None:
         return None
 
 
+def load_json_dict(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        obj = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    return obj if isinstance(obj, dict) else {}
+
+
+def upsert_control(path: Path, updates: dict) -> None:
+    payload = load_json_dict(path)
+    payload.update(updates)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_suffix(".tmp")
+    tmp.write_text(json.dumps(payload, ensure_ascii=True), encoding="utf-8")
+    tmp.replace(path)
+
+
 async def run_server(
     shm_name: str,
     host: str,
@@ -93,9 +114,10 @@ async def run_server(
     last_state_sig = ""
     last_audio_seq = -1
     last_hover_write = 0.0
+    last_view_write = 0.0
 
     async def handler(ws):
-        nonlocal last_hover_write
+        nonlocal last_hover_write, last_view_write
         clients.add(ws)
         try:
             async for raw in ws:
@@ -105,24 +127,37 @@ async def run_server(
                     msg = json.loads(raw)
                 except json.JSONDecodeError:
                     continue
-                if msg.get("type") != "hover" or control_path is None:
-                    continue
                 now = time.time()
-                if now - last_hover_write < 0.08:
+                if control_path is None:
                     continue
-                freq = float(msg.get("freq_hz", 0.0))
-                strength = float(msg.get("strength", 0.0))
-                payload = {
-                    "mode": "am",
-                    "hover_freq_hz": freq,
-                    "strength": strength,
-                    "updated_epoch_sec": now,
-                }
-                control_path.parent.mkdir(parents=True, exist_ok=True)
-                tmp = control_path.with_suffix(".tmp")
-                tmp.write_text(json.dumps(payload, ensure_ascii=True), encoding="utf-8")
-                tmp.replace(control_path)
-                last_hover_write = now
+                msg_type = str(msg.get("type", "")).lower()
+                if msg_type == "hover":
+                    if now - last_hover_write < 0.08:
+                        continue
+                    freq = float(msg.get("freq_hz", 0.0))
+                    strength = float(msg.get("strength", 0.0))
+                    payload = {
+                        "mode": "am",
+                        "hover_freq_hz": freq,
+                        "strength": strength,
+                        "hover_updated_epoch_sec": now,
+                    }
+                    upsert_control(control_path, payload)
+                    last_hover_write = now
+                elif msg_type == "view_window":
+                    if now - last_view_write < 0.05:
+                        continue
+                    center = float(msg.get("center_freq_hz", 0.0))
+                    span = float(msg.get("sample_rate_hz", 0.0))
+                    center = max(ALL_BAND_MIN_HZ, min(ALL_BAND_MAX_HZ, center))
+                    payload = {
+                        "view_center_hz": center,
+                        "view_updated_epoch_sec": now,
+                    }
+                    if span > 0:
+                        payload["view_span_hz"] = span
+                    upsert_control(control_path, payload)
+                    last_view_write = now
         finally:
             clients.discard(ws)
 

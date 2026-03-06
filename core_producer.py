@@ -30,11 +30,16 @@ DB_MIN = -110.0
 DB_MAX = -20.0
 AM_AUDIO_RATE = 8000
 AM_CHUNK_SAMPLES = 160
+ALL_BAND_MIN_HZ = 530_000.0
+ALL_BAND_MAX_HZ = 26_100_000.0
 
 
 class IQSource:
     def read(self, n: int) -> np.ndarray:
         raise NotImplementedError
+
+    def set_center_freq(self, freq_hz: float) -> None:
+        return None
 
     def close(self) -> None:
         return None
@@ -49,6 +54,10 @@ class SimIQSource(IQSource):
         out = synth_iq(n, self.sample_rate, self.phase_t)
         self.phase_t += n / self.sample_rate
         return out
+
+    def set_center_freq(self, freq_hz: float) -> None:
+        # Simulation source does not have hardware tuning; keep timing continuity.
+        _ = freq_hz
 
 
 class RtlSdrIQSource(IQSource):
@@ -89,6 +98,9 @@ class RtlSdrIQSource(IQSource):
     def read(self, n: int) -> np.ndarray:
         # read_samples returns complex64 normalized IQ samples.
         return self.sdr.read_samples(n).astype(np.complex64, copy=False)
+
+    def set_center_freq(self, freq_hz: float) -> None:
+        self.sdr.center_freq = float(freq_hz)
 
     def close(self) -> None:
         self.sdr.close()
@@ -179,6 +191,7 @@ def run(
     carry = np.zeros(bins - hop, dtype=np.complex64)
     frame_interval = 1.0 / target_fps if target_fps > 0 else 0.0
     last_control_check = 0.0
+    current_center_freq = float(center_freq)
     tuned_freq_hz = 0.0
     nco_phase = 0.0
     audio_accum = np.zeros(0, dtype=np.float32)
@@ -206,8 +219,17 @@ def run(
                 if control_path.exists():
                     try:
                         obj = json.loads(control_path.read_text(encoding="utf-8"))
+                        view_center = float(obj.get("view_center_hz", 0.0))
+                        view_updated = float(obj.get("view_updated_epoch_sec", 0.0))
+                        if view_center > 0 and now - view_updated <= 120.0:
+                            view_center = max(ALL_BAND_MIN_HZ, min(ALL_BAND_MAX_HZ, view_center))
+                            if abs(view_center - current_center_freq) >= 1.0:
+                                source.set_center_freq(view_center)
+                                current_center_freq = view_center
                         freq = float(obj.get("hover_freq_hz", 0.0))
-                        updated = float(obj.get("updated_epoch_sec", 0.0))
+                        updated = float(
+                            obj.get("hover_updated_epoch_sec", obj.get("updated_epoch_sec", 0.0))
+                        )
                         mode = str(obj.get("mode", "am")).lower()
                         if mode == "am" and now - updated <= 3.0:
                             tuned_freq_hz = freq
@@ -217,7 +239,7 @@ def run(
                         tuned_freq_hz = 0.0
 
             if tuned_freq_hz > 0:
-                freq_offset = tuned_freq_hz - center_freq
+                freq_offset = tuned_freq_hz - current_center_freq
                 max_off = sample_rate * 0.5
                 if freq_offset < -max_off:
                     freq_offset = -max_off
