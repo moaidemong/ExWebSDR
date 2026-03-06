@@ -166,6 +166,7 @@
     const ALL_BAND_MAX_HZ = 26_100_000;
     const DEFAULT_SPAN_HZ = 2_400_000;
     const SLIDER_STEP_HZ = 100_000;
+    const RETUNE_SUPPRESS_MS = 420;
 
     const canvas = document.getElementById("wf");
     const ctx = canvas.getContext("2d");
@@ -207,6 +208,7 @@
     let lastViewSendTs = 0;
     let latestAMWave = null;
     let latestAMWaveTs = 0;
+    let suppressFramesUntil = 0;
 
     let rowImage = ctx.createImageData(1024, 1);
     let metaVisible = localStorage.getItem("exwebsdr_meta_visible") === "1";
@@ -300,6 +302,7 @@
       updateSliderVisual();
       drawMeasure();
       clearWaterfall();
+      suppressFramesUntil = performance.now() + RETUNE_SUPPRESS_MS;
       sendViewControl(reason === "init");
       renderMeta();
     }
@@ -787,6 +790,7 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
       }
       const frame = parseFrame(ev.data);
       if (!frame) return;
+      if (performance.now() < suppressFramesUntil) return;
       drawRow(frame.row);
     };
 
