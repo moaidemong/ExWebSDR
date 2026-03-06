@@ -1,6 +1,6 @@
 # Chat Archive
 
-This folder stores exported conversation history related to TinyWebSDR work.
+This folder stores exported conversation history related to ExWebSDR work.
 
 ## Recommended export format
 
@@ -18,8 +18,8 @@ Use timestamped filenames:
 
 Example:
 
-- `2026-03-06-tinywebsdr-build-log.html`
-- `2026-03-06-tinywebsdr-build-log.pdf`
+- `2026-03-06-ExWebSDR-build-log.html`
+- `2026-03-06-ExWebSDR-build-log.pdf`
 
 ## Minimal metadata note (optional)
 
@@ -34,7 +34,7 @@ Template:
 
 - Date: 2026-03-06
 - Source: Chat UI export
-- Scope: TinyWebSDR SDR pipeline + scheduler
+- Scope: ExWebSDR SDR pipeline + scheduler
 - Related commits:
   - 5030953
   - 5911da0
@@ -46,3 +46,4 @@ Template:
 - Commit archive files in a dedicated commit message like:
   - `docs: archive chat session 2026-03-06`
 - Large binary exports (very big PDF/ZIP) are better tracked with Git LFS.
+

@@ -1,4 +1,4 @@
-﻿# TinyWebSDR
+# ExWebSDR
 
 A real-time shortwave waterfall visualization system using RTL-SDR v4, designed for low-latency browser-based spectrum display.
 
@@ -12,7 +12,7 @@ A real-time shortwave waterfall visualization system using RTL-SDR v4, designed 
 ### Setup
 1. Clone repository: `git clone <repo-url>`
 2. Open WSL2 terminal and move to mounted path:
-   `cd /mnt/c/Workspace/Codex/TinyWebSDR`
+   `cd /mnt/c/Workspace/Codex/ExWebSDR`
 3. Install Python dependencies:
    `python3 -m pip install -r requirements.txt`
 4. Normalize shell script line endings (once):
@@ -42,7 +42,7 @@ Run in **Windows PowerShell (Administrator)**.
 
 ### RTL Device Mode
 1. Connect RTL-SDR v4 device.
-2. In WSL2 mounted path (`/mnt/c/Workspace/Codex/TinyWebSDR`), run:
+2. In WSL2 mounted path (`/mnt/c/Workspace/Codex/ExWebSDR`), run:
    `./run_mvp.sh --source rtlsdr --center-freq 6850000 --sample-rate 2400000 --gain 38.6`
 3. This setting shows about `5.65 MHz ~ 8.05 MHz` (`center ± sample_rate/2`), close to the SDR++ screenshot span.
 4. Waterfall resolution is `8192` FFT bins for sharper narrowband lines.
@@ -87,7 +87,7 @@ If logs repeatedly show `[R82XX] PLL not locked!`:
 
 ## Architecture
 
-TinyWebSDR uses a 3-component pipeline optimized for real-time performance:
+ExWebSDR uses a 4-component pipeline optimized for real-time performance:
 
 1. **Producer** (`core_producer.py`) - RTL-SDR interface, IQ processing, FFT computation
 2. **Shared Memory Bus** - Latest-only data exchange with backpressure handling  
@@ -113,3 +113,4 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for detailed technical specific
 
 ### Contributing
 Follow the workflow defined in [docs/WORKFLOW.md](docs/WORKFLOW.md) for feature requests and progress updates.
+

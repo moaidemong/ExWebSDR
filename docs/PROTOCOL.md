@@ -1,59 +1,76 @@
-# TinyWebSDR WebSocket Protocol (MVP)
+# ExWebSDR WebSocket Protocol (MVP)
 
 ## Scope
-- This document defines the binary frame between `ws_server.py` and browser client.
-- Source data contract comes from `docs/ARCHITECTURE.md`.
+- Defines runtime messages between `ws_server.py` and browser clients.
+- Covers waterfall binary frames and JSON side channels (`meta`, `am_wave`, hover control).
 
 ## Transport
-- Protocol: WebSocket.
-- Message type: binary only for waterfall rows.
-- Frequency: latest-only push; stale rows may be dropped by gateway.
+- Protocol: WebSocket
+- Waterfall: binary frames
+- Metadata and AM waveform: JSON text frames
+- Delivery policy: latest-oriented, stale rows may be skipped
 
-## Binary Frame (little-endian)
+## Binary Waterfall Frame
+Little-endian layout (`HEADER_FORMAT = "<I d H"`):
 1. `uint32 seq`
-2. `float64 t_capture_monotonic_sec`
+2. `float64 t_capture_epoch_sec`
 3. `uint16 bins`
 4. `uint8[bins] row`
 
-## Fixed MVP Values
-- `bins = 1024`
-- Total frame length: `4 + 8 + 2 + 1024 = 1038` bytes.
-- dB clamp range: `[-110 dB, -20 dB]`
-- Encoding:
-  - `u8 = round((clamp(db, -110, -20) + 110) * 255 / 90)`
-- Optional decode on client:
-  - `db = (u8 * 90 / 255) - 110`
+### Current fixed values
+- `bins = 8192`
+- Total frame length: `14 + 8192 = 8206` bytes
+- dB clamp range encoded in producer: `[-110, -20]`
 
-## Validation Rules (Client)
-- Reject if payload length `< 14`.
-- Reject if `bins == 0`.
-- Reject if payload length `!= 14 + bins`.
-- Reject if `bins != 1024` (MVP strict mode).
-- If invalid frame ratio increases, log warning and keep rendering previous rows.
+### Client validation rules
+- Reject if payload length `< 14`
+- Reject if `bins <= 0`
+- Reject if payload length `!= 14 + bins`
+- Reject if `bins != 8192` (current strict mode in gateway/client)
 
-## Sequence and Timing
-- `seq` increments by 1 per emitted row.
-- Client may estimate frame drops from sequence gaps.
-- End-to-end latency estimate:
-  - `latency_ms = (client_monotonic_now - t_capture_monotonic_sec) * 1000`
-
-## Error Handling (Gateway)
-- If producer data unavailable, gateway sends nothing (no fake frames).
-- On producer recovery, sequence resumes from latest producer sequence.
-
-## Minimal Parsing Example (JavaScript)
-```js
-function parseFrame(arrayBuffer) {
-  const view = new DataView(arrayBuffer);
-  if (view.byteLength < 14) return null;
-
-  const seq = view.getUint32(0, true);
-  const tCapture = view.getFloat64(4, true);
-  const bins = view.getUint16(12, true);
-  if (bins !== 1024) return null;
-  if (view.byteLength !== 14 + bins) return null;
-
-  const row = new Uint8Array(arrayBuffer, 14, bins);
-  return { seq, tCapture, bins, row };
+## JSON Messages From Gateway
+### `meta`
+```json
+{
+  "type": "meta",
+  "band_name": "Night SW",
+  "center_freq_hz": 6850000,
+  "sample_rate_hz": 2400000,
+  "next_change_epoch_sec": 1770000000.0
 }
 ```
+
+### `am_wave`
+```json
+{
+  "type": "am_wave",
+  "freq_hz": 7000000,
+  "sample_rate_hz": 8000,
+  "samples": [0.01, -0.03, 0.04]
+}
+```
+
+## JSON Message From Client
+### `hover`
+```json
+{
+  "type": "hover",
+  "mode": "am",
+  "freq_hz": 7000000,
+  "strength": 0.42
+}
+```
+
+Gateway writes this intent to `runtime/hover_control.json` (rate-limited), and producer uses it to generate AM waveform chunks.
+
+## Sequence and Timing
+- `seq` increases by 1 per producer frame/chunk.
+- `t_capture_epoch_sec` is Unix epoch seconds from producer capture loop.
+- Frame-drop estimation can use sequence gaps.
+- Approximate latency estimate:
+  - `latency_ms = (Date.now() / 1000 - t_capture_epoch_sec) * 1000`
+
+## Error Handling
+- If producer/shared memory is unavailable, gateway sends no synthetic frame.
+- If active shared-memory name changes (scheduler handover), gateway re-attaches to the new segment.
+- AM waveform stream is optional; client should continue waterfall render if AM data is absent.

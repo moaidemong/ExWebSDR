@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TinyWebSDR WebSocket gateway.
+"""ExWebSDR WebSocket gateway.
 
 Reads latest row from shared memory and pushes binary frames to clients.
 """
@@ -211,8 +211,8 @@ async def run_server(
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="TinyWebSDR websocket gateway")
-    p.add_argument("--shm-name", default="tinywebsdr_latest")
+    p = argparse.ArgumentParser(description="ExWebSDR websocket gateway")
+    p.add_argument("--shm-name", default="exwebsdr_latest")
     p.add_argument("--host", default="127.0.0.1")
     p.add_argument("--port", type=int, default=8765)
     p.add_argument("--fps", type=float, default=120.0)
@@ -235,3 +235,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

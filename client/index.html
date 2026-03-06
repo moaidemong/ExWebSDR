@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>TinyWebSDR MVP</title>
+  <title>ExWebSDR MVP</title>
   <style>
     html, body { margin: 0; height: 100%; background: #00040f; overflow: hidden; }
     canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
@@ -116,7 +116,7 @@
     let latestAMWaveTs = 0;
 
     let rowImage = ctx.createImageData(1024, 1);
-    let metaVisible = localStorage.getItem("tinywebsdr_meta_visible") === "1";
+    let metaVisible = localStorage.getItem("exwebsdr_meta_visible") === "1";
     let currentMeta = {
       band_name: "-",
       center_freq_hz: null,
@@ -196,7 +196,7 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
 
     metaToggleEl.addEventListener("click", () => {
       metaVisible = !metaVisible;
-      localStorage.setItem("tinywebsdr_meta_visible", metaVisible ? "1" : "0");
+      localStorage.setItem("exwebsdr_meta_visible", metaVisible ? "1" : "0");
       renderMeta();
     });
 
@@ -490,3 +490,4 @@ Next: ${fmtLocal(currentMeta.next_change_epoch_sec)}`;
   </script>
 </body>
 </html>
+

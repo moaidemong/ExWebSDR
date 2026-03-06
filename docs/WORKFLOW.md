@@ -1,4 +1,4 @@
-﻿# TinyWebSDR Development Workflow
+# ExWebSDR Development Workflow
 
 ## Request Format
 When requesting work or feature development:
@@ -49,3 +49,4 @@ For architectural decisions (ADR format):
 - Focus on latency measurement and frame drop analysis
 - Verify WebSocket protocol compliance
 - Test recovery scenarios (device disconnect, process restart)
+

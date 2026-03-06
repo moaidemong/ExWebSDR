@@ -1,4 +1,4 @@
-﻿# ADR-0001: Initial Architecture for TinyWebSDR MVP
+# ADR-0001: Initial Architecture for ExWebSDR MVP
 
 - **Date**: 2026-03-05
 - **Status**: Proposed
@@ -15,3 +15,4 @@
   - **Positive**: Simple architecture with clear performance boundaries, proven technologies, fast debugging cycle
   - **Negative**: Single-process limitation, no multi-client support in MVP, 2D canvas may limit future visual effects
   - **Risks**: RTL-SDR device handling robustness, shared memory coordination between processes
+

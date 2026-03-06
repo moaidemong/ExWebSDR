@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""TinyWebSDR producer: generates latest FFT row into shared memory.
+"""ExWebSDR producer: generates latest FFT row into shared memory.
 
 MVP behavior:
 - Uses simulated IQ source by default (works without RTL hardware).
@@ -281,9 +281,9 @@ def run(
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="TinyWebSDR FFT producer")
-    p.add_argument("--shm-name", default="tinywebsdr_latest")
-    p.add_argument("--audio-shm-name", default="tinywebsdr_latest_audio")
+    p = argparse.ArgumentParser(description="ExWebSDR FFT producer")
+    p.add_argument("--shm-name", default="exwebsdr_latest")
+    p.add_argument("--audio-shm-name", default="exwebsdr_latest_audio")
     p.add_argument("--control-file", default="runtime/hover_control.json")
     p.add_argument("--sample-rate", type=float, default=2_048_000.0)
     p.add_argument("--fps", type=float, default=60.0)
@@ -307,3 +307,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

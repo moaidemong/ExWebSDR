@@ -101,7 +101,7 @@ def write_state(state_file: Path, shm_name: str, profile: BandProfile, tz: ZoneI
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="TinyWebSDR day-part scheduler")
+    p = argparse.ArgumentParser(description="ExWebSDR day-part scheduler")
     p.add_argument("--state-file", default="runtime/band_state.json")
     p.add_argument("--timezone", default="Asia/Seoul")
     p.add_argument("--python-bin", default=sys.executable)
@@ -120,7 +120,7 @@ def main() -> None:
     signal.signal(signal.SIGINT, _stop)
     signal.signal(signal.SIGTERM, _stop)
 
-    slots = ["tinywebsdr_a", "tinywebsdr_b"]
+    slots = ["exwebsdr_a", "exwebsdr_b"]
     slot_idx = 0
 
     current_profile = find_profile(datetime.now(tz))
@@ -168,3 +168,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

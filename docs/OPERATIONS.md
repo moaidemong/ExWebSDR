@@ -1,4 +1,4 @@
-# TinyWebSDR Operations
+# ExWebSDR Operations
 
 ## 24h Scheduler Mode
 
@@ -17,17 +17,17 @@ This starts:
 
 ### 1) Create service file
 
-Create `/etc/systemd/system/tinywebsdr-title.service`:
+Create `/etc/systemd/system/exwebsdr-title.service`:
 
 ```ini
 [Unit]
-Description=TinyWebSDR 24h title stream
+Description=ExWebSDR 24h title stream
 After=network.target
 
 [Service]
 Type=simple
 User=kakut
-WorkingDirectory=/mnt/c/Workspace/Codex/TinyWebSDR
+WorkingDirectory=/mnt/c/Workspace/Codex/ExWebSDR
 Environment=PYTHONUNBUFFERED=1
 ExecStart=/usr/bin/env bash -lc 'source .venv/bin/activate && ./run_title_stream.sh'
 Restart=always
@@ -43,18 +43,19 @@ Adjust `User` and `WorkingDirectory` as needed.
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable tinywebsdr-title.service
-sudo systemctl start tinywebsdr-title.service
+sudo systemctl enable exwebsdr-title.service
+sudo systemctl start exwebsdr-title.service
 ```
 
 ### 3) Verify and logs
 
 ```bash
-sudo systemctl status tinywebsdr-title.service
-journalctl -u tinywebsdr-title.service -f
+sudo systemctl status exwebsdr-title.service
+journalctl -u exwebsdr-title.service -f
 ```
 
 ## Notes
 
 - Metadata overlay in browser can be toggled with `Meta On/Off` button or `M`.
 - Band state file path default: `runtime/band_state.json`.
+

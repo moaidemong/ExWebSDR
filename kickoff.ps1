@@ -1,6 +1,6 @@
 # kickoff.ps1
 param(
-  [string]$ProjectName = "TinyWebSDR",
+  [string]$ProjectName = "ExWebSDR",
   [string]$GithubOwner = "<YOUR_GITHUB_ID_OR_ORG>",
   [ValidateSet("public","private")] [string]$Visibility = "private"
 )
@@ -180,3 +180,4 @@ if ($LASTEXITCODE -ne 0) {
 Write-Host $pushOutput
 
 Write-Host "Kickoff complete: https://github.com/$repo"
+
