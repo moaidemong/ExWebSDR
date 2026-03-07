@@ -19,7 +19,7 @@ A real-time shortwave waterfall visualization system using RTL-SDR v4, designed 
    `sed -i 's/\r$//' run_mvp.sh`
 5. Run simulation stack:
    `chmod +x run_mvp.sh && ./run_mvp.sh --source sim`
-6. Open browser client at `http://127.0.0.1:8080`
+6. Open browser client at `http://127.0.0.1:8079`
 
 ### Windows PowerShell (Optional)
 - Run simulation stack: `.\run_mvp.ps1 -Source sim`

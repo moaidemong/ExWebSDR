@@ -36,10 +36,10 @@ echo "Starting websocket gateway..."
 "$PYTHON_BIN" ws_server.py --state-file "$STATE_FILE" &
 GATEWAY_PID=$!
 
-echo "Starting client static server on http://127.0.0.1:8080 ..."
+echo "Starting client static server on http://127.0.0.1:8079 ..."
 (
   cd client
-  "$PYTHON_BIN" -m http.server 8080
+  "$PYTHON_BIN" -m http.server 8079
 ) &
 CLIENT_PID=$!
 

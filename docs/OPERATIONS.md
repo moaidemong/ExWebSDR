@@ -11,7 +11,7 @@ Run locally:
 This starts:
 - `scheduler.py` (time-based band switching, A/B producer handover)
 - `ws_server.py` (WebSocket gateway with metadata broadcast)
-- `client` static server (`http://127.0.0.1:8080`)
+- `client` static server (`http://127.0.0.1:8079`)
 
 ## systemd Setup (WSL Ubuntu 22.04)
 

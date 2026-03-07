@@ -23,7 +23,7 @@ Start-Process -FilePath "python" -ArgumentList $producerArgs
 Write-Host "Starting websocket gateway..."
 Start-Process -FilePath "python" -ArgumentList @("ws_server.py")
 
-Write-Host "Starting client static server on http://127.0.0.1:8080 ..."
-Start-Process -FilePath "python" -WorkingDirectory "client" -ArgumentList @("-m", "http.server", "8080")
+Write-Host "Starting client static server on http://127.0.0.1:8079 ..."
+Start-Process -FilePath "python" -WorkingDirectory "client" -ArgumentList @("-m", "http.server", "8079")
 
 Write-Host "MVP stack started."

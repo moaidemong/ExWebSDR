@@ -249,7 +249,7 @@ def main() -> None:
     p = argparse.ArgumentParser(description="ExWebSDR websocket gateway")
     p.add_argument("--shm-name", default="exwebsdr_latest")
     p.add_argument("--host", default="127.0.0.1")
-    p.add_argument("--port", type=int, default=8765)
+    p.add_argument("--port", type=int, default=8764)
     p.add_argument("--fps", type=float, default=120.0)
     p.add_argument("--state-file", default="runtime/band_state.json")
     p.add_argument("--meta-interval", type=float, default=1.0)

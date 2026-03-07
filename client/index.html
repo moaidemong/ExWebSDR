@@ -678,7 +678,7 @@
       return { seq, tCapture, row };
     }
 
-    const ws = new WebSocket(`ws://${location.hostname || "127.0.0.1"}:8765`);
+    const ws = new WebSocket(`ws://${location.hostname || "127.0.0.1"}:8764`);
     ws.binaryType = "arraybuffer";
     ws.onopen = () => {
       sendViewControl(true);
